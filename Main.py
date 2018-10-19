@@ -18,11 +18,13 @@ def ServicePress(channel):
 # Determines if the knob is turned left(0) or right (1)
 # take in two lists and compare
 def checkTurn(initial, final):
-	#print("Initial: " + str(initial) + "        Final: " + str(final))
-	if (initial > final):
+	print("Initial: " + str(initial) + "        Final: " + str(final))
+	# Allowed tolerance for small negligable changes
+	tolerance = 10
+	if (initial - final > tolerance):
 		print("Left turn")
 		return 0 # Left turn
-	elif (initial < final):
+	elif (final - initial > tolerance):
 		print("Right turn")
 		return 1 # right turn
 	else:
@@ -57,7 +59,7 @@ def main():
 
 	while (1):
     	
-		global ch0, Sbtn
+		global ch0, Sbtn, code, ans
 		ch0.insert(16, mcp.read_adc(0))
 		ch0.pop(0)
 
@@ -78,21 +80,38 @@ def main():
 
 			time.sleep(1)
 			
-			while (1):
+			while (check != 2):
 				
 				time.sleep(2)
 				fin = mcp.read_adc(0)
 				ch0.insert(16, fin)
 				ch0.pop(0)
 
-
+				os.system("clear")
 				check = checkTurn(init, fin)
 				init = fin
+				code.append(check)  #0 = left, 1 = right, 2 = no turn
+				ans = True
 				
+
+			#compare code
+			if (ans == True):
+				
+				del(code[0])
+				del(code[-1])
+
+				if (code == lock):
+					GPIO.output(lockPin, GPIO.LOW)
+					print("Code correct!")
+					ans = False
+				else:
+					print("Wrong code!")
 
 
 			Sbtn = False
 			print("Done comparing!")
+			print("Code entered: ")
+			print(code)
 
 
 
@@ -102,6 +121,8 @@ def main():
 Time = [0]*16
 Timer = [0]*16
 ch0 = [0]*16 # Channel for the knob
+lock = [0,1,0,1]
+code = [2]  # Code input by user (2 = start or stop)
 GPIO.setmode(GPIO.BCM)
 
 # Buttons definition
@@ -111,9 +132,10 @@ GPIO.add_event_detect(service, GPIO.FALLING, callback = ServicePress, bouncetime
     
 
    #Lock and unlock ports to be done (Lock on by default)
-lock = 3
-GPIO.setup(lock, GPIO.OUT)
-GPIO.output(lock, GPIO.HIGH)
+lockPin = 3
+ans  =  False
+GPIO.setup(lockPin, GPIO.OUT)
+GPIO.output(lockPin, GPIO.HIGH)
 print("LOCKED!")
 
     # Software SPI configuration (in BCM mode):
