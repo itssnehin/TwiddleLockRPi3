@@ -55,7 +55,7 @@ def checkTurn(initial, final):
 # keep log of durations in ms
 def main():
 
-
+	counter = 0
 
 	while (1):
     	
@@ -67,7 +67,7 @@ def main():
 		
 		fin = [0] * 16
 		check = -1
-		lastValue = -1
+		lastValue = -2
 
 
 		# If btn pressed check for turns
@@ -86,6 +86,7 @@ def main():
 
 				time.sleep(1)
 				fin = mcp.read_adc(0)
+				
 				ch0.insert(16, fin)
 				ch0.pop(0)
 
@@ -94,19 +95,26 @@ def main():
 				lastValue = check
 
 				check = checkTurn(init, fin)
-
+				counter += 1
 				interval += 1
 				# Compare last turn to current turn
-				if (lastValue != check):
-					Time.append(interval)
+				if ((lastValue != check) and (lastValue != 2)):
+					counter = 0
+					Time.append(interval - 1)
 					interval = 0
 
+				
 				init = fin
 				if (check != 2):
 					code.append(check)  #0 = left, 1 = right, 2 = no turn
 				
+				if ((lastValue == check) and (lastValue != 2)):
+					
+					code.pop()
+
 				ans = True
 				print("Check " + str(check))
+				print("Time passed: " + str(counter) + "s")
 
 				if (check == 2) and (interval > 5):
 					break
@@ -116,11 +124,13 @@ def main():
 			if (ans == True):
 				
 				del(code[0])
-
-				if (code == lock):
+				del(Time[0])
+				if ((code == lock) and (lockTime == Time)):
 					GPIO.output(lockPin, GPIO.LOW)
 					print("Code correct!")
 					ans = False
+
+
 				else:
 					print("Wrong code!")
 
@@ -137,10 +147,12 @@ def main():
 ########################### Initial Setup #################################
 
 #Globals
-Time = [2]
-Timer = [0]*16
+Time = []
+
 ch0 = [0]*16 # Channel for the knob
 lock = [0,1,0,1]
+lockTime = [2,2,3,2]
+
 code = [2]  # Code input by user (2 = start or stop)
 GPIO.setmode(GPIO.BCM)
 interval = 0 # Time passed
