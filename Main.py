@@ -59,7 +59,7 @@ def main():
 
 	while (1):
     	
-		global ch0, Sbtn, code, ans
+		global ch0, Sbtn, code, ans, interval
 		ch0.insert(16, mcp.read_adc(0))
 		ch0.pop(0)
 
@@ -67,38 +67,55 @@ def main():
 		
 		fin = [0] * 16
 		check = -1
-
+		lastValue = -1
 
 
 		# If btn pressed check for turns
 		if (Sbtn == True):
 
+			print("Start!")
 			init = mcp.read_adc(0)
 			ch0.insert(16, init)
 			ch0.pop(0)
 			 #make sure not off (0V) initially for now
 
 			time.sleep(1)
-			
-			while (check != 2):
+			interval = 0
+			while (1):
 				
-				time.sleep(2)
+
+				time.sleep(1)
 				fin = mcp.read_adc(0)
 				ch0.insert(16, fin)
 				ch0.pop(0)
 
+
 				os.system("clear")
+				lastValue = check
+
 				check = checkTurn(init, fin)
+
+				interval += 1
+				# Compare last turn to current turn
+				if (lastValue != check):
+					Time.append(interval)
+					interval = 0
+
 				init = fin
-				code.append(check)  #0 = left, 1 = right, 2 = no turn
+				if (check != 2):
+					code.append(check)  #0 = left, 1 = right, 2 = no turn
+				
 				ans = True
+				print("Check " + str(check))
+
+				if (check == 2) and (interval > 5):
+					break
 				
 
 			#compare code
 			if (ans == True):
 				
 				del(code[0])
-				del(code[-1])
 
 				if (code == lock):
 					GPIO.output(lockPin, GPIO.LOW)
@@ -112,19 +129,21 @@ def main():
 			print("Done comparing!")
 			print("Code entered: ")
 			print(code)
+			print("interval: ")
+			print(Time)
 
 
 
 ########################### Initial Setup #################################
 
 #Globals
-Time = [0]*16
+Time = [2]
 Timer = [0]*16
 ch0 = [0]*16 # Channel for the knob
 lock = [0,1,0,1]
 code = [2]  # Code input by user (2 = start or stop)
 GPIO.setmode(GPIO.BCM)
-
+interval = 0 # Time passed
 # Buttons definition
 service = 2 # Can change later on
 GPIO.setup(service, GPIO.IN, pull_up_down = GPIO.PUD_UP)
