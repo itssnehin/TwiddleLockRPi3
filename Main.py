@@ -7,12 +7,23 @@ import Adafruit_MCP3008
 # secure mode: button pressed
 # unsecure mode: button + knob 
 Sbtn = False
-
+Ubtn = False
 def ServicePress(channel):
-	#print(ch0)
-	global Sbtn
-	Sbtn = True
 
+	print("Secure mode!")
+	global Sbtn, code, Time 
+	Sbtn = True
+	Ubtn = False
+	code = []
+	Time = []
+
+def unsecure(channel):
+	print("Unsecure mode!")
+	global Ubtn, code, Time 
+	Ubtn = True
+	Sbtn = False
+	code = []
+	Time = []
 
 
 # Determines if the knob is turned left(0) or right (1)
@@ -32,23 +43,6 @@ def checkTurn(initial, final):
 		return 2 # no change in position
 
 
-# Knob has 20 possible 'signals'
-# R10 - R1 and L1 to L10s
-#def CodeLine():
-
-
-
-#def UnlockLine():
-
-
-
-#def LockLine():
-
-
-
-#def SecureMode():
-
-
 
 # main function to check buttons
 # Assume lock is locked by default
@@ -59,7 +53,7 @@ def main():
 
 	while (1):
     	
-		global ch0, Sbtn, code, ans, interval
+		global ch0, Sbtn, code, ans, interval, Ubtn, Time
 		ch0.insert(16, mcp.read_adc(0))
 		ch0.pop(0)
 
@@ -71,7 +65,7 @@ def main():
 
 
 		# If btn pressed check for turns
-		if (Sbtn == True):
+		if ((Sbtn == True) or (Ubtn == True)):
 
 			print("Start!")
 			init = mcp.read_adc(0)
@@ -79,7 +73,7 @@ def main():
 			ch0.pop(0)
 			 #make sure not off (0V) initially for now
 
-			time.sleep(1)
+			time.sleep(0.5)
 			interval = 0
 			while (1):
 				
@@ -103,44 +97,67 @@ def main():
 					Time.append(interval - 1)
 					interval = 0
 
-				
+				if ((lastValue != check) and (lastValue == 2)):
+					interval = 0
+					counter = 0
+
+
 				init = fin
 				if (check != 2):
 					code.append(check)  #0 = left, 1 = right, 2 = no turn
 				
 				if ((lastValue == check) and (lastValue != 2)):
-					
 					code.pop()
 
 				ans = True
 				print("Check " + str(check))
 				print("Time passed: " + str(counter) + "s")
 
-				if (check == 2) and (interval > 5):
+				if (check == 2) and (interval > 4):
 					break
 				
 
 			#compare code
 			if (ans == True):
 				
-				del(code[0])
 				del(Time[0])
-				if ((code == lock) and (lockTime == Time)):
+
+				#Sort the input
+				if (Ubtn):
+					Time.sort()
+					lockTime.sort()
+
+				
+				
+
+				if ((code == lock) and (lockTime == Time) and Sbtn):
 					GPIO.output(lockPin, GPIO.LOW)
-					print("Code correct!")
+					print("Code and Timing correct!")
 					ans = False
 
+				elif ((lockTime == Time) and Ubtn):
+					GPIO.output(lockPin, GPIO.LOW)
+					print("Timing correct!")
+					ans = False
 
 				else:
 					print("Wrong code!")
 
 
 			Sbtn = False
+			Ubtn = False
 			print("Done comparing!")
 			print("Code entered: ")
 			print(code)
 			print("interval: ")
 			print(Time)
+
+
+
+
+
+
+
 
 
 
@@ -153,14 +170,18 @@ ch0 = [0]*16 # Channel for the knob
 lock = [0,1,0,1]
 lockTime = [2,2,3,2]
 
-code = [2]  # Code input by user (2 = start or stop)
+code = []  # Code input by user (2 = start or stop)
 GPIO.setmode(GPIO.BCM)
 interval = 0 # Time passed
 # Buttons definition
 service = 2 # Can change later on
 GPIO.setup(service, GPIO.IN, pull_up_down = GPIO.PUD_UP)
 GPIO.add_event_detect(service, GPIO.FALLING, callback = ServicePress, bouncetime = 500)
-    
+
+Upin = 26
+GPIO.setup(Upin, GPIO.IN, pull_up_down = GPIO.PUD_UP)
+GPIO.add_event_detect(Upin, GPIO.FALLING, callback = unsecure, bouncetime = 500)
+
 
    #Lock and unlock ports to be done (Lock on by default)
 lockPin = 3
