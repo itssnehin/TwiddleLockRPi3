@@ -166,8 +166,8 @@ def main():
 Time = []
 
 ch0 = [0]*16 # Channel for the knob
-lock = [0,1,0,1]
-lockTime = [2,2,3,2]
+lock = [0,1,0,0,1]
+lockTime = [2,2,3,2,2]
 
 code = []  # Code input by user
 GPIO.setmode(GPIO.BCM)
