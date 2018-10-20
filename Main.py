@@ -78,7 +78,7 @@ def main():
 			while (1):
 				
 
-				time.sleep(1)
+				time.sleep(0.5)
 				fin = mcp.read_adc(0)
 				
 				ch0.insert(16, fin)
@@ -89,12 +89,12 @@ def main():
 				lastValue = check
 
 				check = checkTurn(init, fin)
-				counter += 1
-				interval += 1
+				counter += 0.5
+				interval += 0.5
 				# Compare last turn to current turn
 				if ((lastValue != check) and (lastValue != 2)):
 					counter = 0
-					Time.append(interval - 1)
+					Time.append(interval - 0.5)
 					interval = 0
 
 				if ((lastValue != check) and (lastValue == 2)):
@@ -113,7 +113,7 @@ def main():
 				print("Check " + str(check))
 				print("Time passed: " + str(counter) + "s")
 
-				if (check == 2) and (interval > 4):
+				if (check == 2) and (interval > 4.5):
 					break
 				
 
@@ -126,9 +126,6 @@ def main():
 				if (Ubtn):
 					Time.sort()
 					lockTime.sort()
-
-				
-				
 
 				if ((code == lock) and (lockTime == Time) and Sbtn):
 					GPIO.output(lockPin, GPIO.LOW)
@@ -151,6 +148,8 @@ def main():
 			print(code)
 			print("interval: ")
 			print(Time)
+			time.sleep(1.5)
+			GPIO.output(lockPin, GPIO.HIGH)
 
 
 
@@ -170,7 +169,7 @@ ch0 = [0]*16 # Channel for the knob
 lock = [0,1,0,1]
 lockTime = [2,2,3,2]
 
-code = []  # Code input by user (2 = start or stop)
+code = []  # Code input by user
 GPIO.setmode(GPIO.BCM)
 interval = 0 # Time passed
 # Buttons definition
