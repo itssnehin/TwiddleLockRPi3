@@ -43,6 +43,16 @@ def checkTurn(initial, final):
 		return 2 # no change in position
 
 
+def Buzz(answer):
+	if (answer):
+		os.system("omxplayer correctAns.mp3")
+	else:
+		os.system("omxplayer wrongAns.mp3")
+	#os.system("q")
+
+
+
+################################  Main  ######################################
 
 # main function to check buttons
 # Assume lock is locked by default
@@ -53,7 +63,7 @@ def main():
 
 	while (1):
     	
-		global ch0, Sbtn, code, ans, interval, Ubtn, Time
+		global ch0, Sbtn, code, inputCode, interval, Ubtn, Time, ans, unlockPin, lockPin
 		ch0.insert(16, mcp.read_adc(0))
 		ch0.pop(0)
 
@@ -77,7 +87,6 @@ def main():
 			interval = 0
 			while (1):
 				
-
 				time.sleep(0.5)
 				fin = mcp.read_adc(0)
 				
@@ -109,7 +118,7 @@ def main():
 				if ((lastValue == check) and (lastValue != 2)):
 					code.pop()
 
-				ans = True
+				inputCode = True
 				print("Check " + str(check))
 				print("Time passed: " + str(counter) + "s")
 
@@ -118,7 +127,7 @@ def main():
 				
 
 			#compare code
-			if (ans == True):
+			if (inputCode == True):
 				
 				del(Time[0])
 
@@ -130,15 +139,38 @@ def main():
 				if ((code == lock) and (lockTime == Time) and Sbtn):
 					GPIO.output(lockPin, GPIO.LOW)
 					print("Code and Timing correct!")
-					ans = False
+					ans = True
+					inputCode = False
+
+					# Unlock line high for 2s
+					GPIO.output(unlockPin, GPIO.HIGH)
+					time.sleep(2)
+					GPIO.output(unlockPin, GPIO.LOW)
+
 
 				elif ((lockTime == Time) and Ubtn):
 					GPIO.output(lockPin, GPIO.LOW)
 					print("Timing correct!")
-					ans = False
+					ans = True
+					inputCode = False
+
+					GPIO.output(unlockPin, GPIO.HIGH)
+					time.sleep(2)
+					GPIO.output(unlockPin, GPIO.LOW)
 
 				else:
+					ans = False
 					print("Wrong code!")
+					
+
+					GPIO.output(lockPin, GPIO.HIGH)
+					time.sleep(2)
+					GPIO.output(lockPin, GPIO.LOW)
+
+				# Play a sound
+				Buzz(ans)
+				ans = False
+
 
 
 			Sbtn = False
@@ -149,26 +181,18 @@ def main():
 			print("interval: ")
 			print(Time)
 			time.sleep(1.5)
-			GPIO.output(lockPin, GPIO.HIGH)
-
-
-
-
-
-
-
-
 
 
 ########################### Initial Setup #################################
 
 #Globals
+GPIO.cleanup()
 Time = []
 
 ch0 = [0]*16 # Channel for the knob
-lock = [0,1,0,0,1]
-lockTime = [2,2,3,2,2]
-
+lock = [0,1,0,1]
+lockTime = [2,2,2,2]
+ans = False
 code = []  # Code input by user
 GPIO.setmode(GPIO.BCM)
 interval = 0 # Time passed
@@ -184,11 +208,23 @@ GPIO.add_event_detect(Upin, GPIO.FALLING, callback = unsecure, bouncetime = 500)
 
    #Lock and unlock ports to be done (Lock on by default)
 lockPin = 3
-ans  =  False
+inputCode  =  False
+
+unlockPin = 19
+
+
+GPIO.setup(unlockPin, GPIO.OUT)
+GPIO.output(unlockPin, GPIO.LOW)
+
+
 GPIO.setup(lockPin, GPIO.OUT)
-GPIO.output(lockPin, GPIO.HIGH)
+GPIO.output(lockPin, GPIO.LOW)
 print("LOCKED!")
 
+
+GPIO.output(lockPin, GPIO.HIGH)
+time.sleep(2)
+GPIO.output(lockPin, GPIO.LOW)
     # Software SPI configuration (in BCM mode):
 CLK  = 11
 MISO = 9
