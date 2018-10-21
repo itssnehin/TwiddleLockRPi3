@@ -186,7 +186,7 @@ def main():
 ########################### Initial Setup #################################
 
 #Globals
-GPIO.cleanup()
+#GPIO.cleanup()
 Time = []
 
 ch0 = [0]*16 # Channel for the knob
