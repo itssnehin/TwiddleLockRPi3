@@ -9,7 +9,6 @@ Insertion sort algorithm using ARM Assembly
 
 main:
 
-
 	@ Initialize
 	ldr r7, =return				@ save
 	str lr, [r7]				@ link register for return
@@ -92,7 +91,7 @@ ploop: cmp r6, r5 @ n - counter
 	ldr r1, [r3] @ r1 <- array[4*counter]
 	ldr r0, =printFMT @ r0 <- &print format
 	bl printf
-	add r5, r5,
+	add r5, r5, #1
 	b ploop
 
 exit:
@@ -100,7 +99,6 @@ exit:
 	ldr r1, =return @ r1 <- &return
 	ldr lr, [r1] @ lr <- *r1 saved return address
 	bx lr
-
 
 .data
 number: .word 0 @ place to hold input number
