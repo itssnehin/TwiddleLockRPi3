@@ -192,8 +192,8 @@ Time = []
 code = []
 
 #Hard Coded Combination
-lock = []
-lockTime = []
+lock = [0,1,0,1]  	#0: left turn, 1: right turn
+lockTime = [2,1,3,1]	#each element is in seconds
 
 #Secure button
 Sbtn = False
@@ -210,7 +210,7 @@ inputCode  =  False
 #Raspberry setup
 GPIO.setmode(GPIO.BCM)
 
-# Buttons definition
+# Initialise buttons
 securePin = 2
 GPIO.setup(securePin, GPIO.IN, pull_up_down = GPIO.PUD_UP)
 GPIO.add_event_detect(securePin, GPIO.FALLING, callback = secureMode, bouncetime = 500)
