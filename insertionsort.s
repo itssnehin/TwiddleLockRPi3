@@ -10,17 +10,17 @@ Insertion sort algorithm using ARM Assembly
 main:
 
 	@ Initialize
-	ldr r7, =return				@ save
-	str lr, [r7]				@ link register for return
-	mov r6, #0					@ counter in r6
+	ldr r7, =result				@ save
+	str lr, [r7]				@ link register for result
+	mov r6, #0				@ counter in r6
 	ldr r4, =array				@ constant array in r4
 
-input:
+inputloop:
 
 	ldr r0, =prompt
 	bl puts
 
-	ldr r0, =scanFMT @ r0 <- &scan format
+	ldr r0, =FormatScan @ r0 <- &scan format
 	ldr r1, =number @ r1 <- &number
 	bl scanf @ call to scanf
 
@@ -33,20 +33,20 @@ input:
 	str r1, [r0] @ array[4*count] <- number
 	add r6, r6, #1 @ count = count + 1
 
-	b input
+	b inputloop
 
 
-isort:
+isort:   @ Implement a double loop (forand while)
 	mov r0, r4 @ r0 <- &array (a)
 	mov r1, r6 @ r1 <- count = length (n)
 
 	mov r2, #1 @ i = 1
 
-iloop:
+iloop:@ for-loop
 	
 	cmp r2, r1 @ i - n
 	bge iloopend @ i >= n then go to loopend
-	add r10, r0, r2, LSL #2 @ temp = &array[4*j]
+	add r10, r0, r2, LSL #2 @ temp = &array[4*j]  (left shift of 2)
 	ldr r10, [r10] @ temp = array [4*i]
 	sub r3, r2, #1 @ j = 1 - 1
 
@@ -80,34 +80,34 @@ iloopend:
 
 output:
 
-	ldr r0, =result
+	ldr r0, =outputMSG
 	bl puts
 	mov r5, #0 @ r5 counter	
 
-ploop: cmp r6, r5 @ n - counter
+printloop: cmp r6, r5 @ n - counter
 
 	ble exit @ done printing
 	add r3, r4, r5, LSL #2 @ r3 <- &array[4*counter]
 	ldr r1, [r3] @ r1 <- array[4*counter]
-	ldr r0, =printFMT @ r0 <- &print format
+	ldr r0, =FormatPrint @ r0 <- &print format
 	bl printf
 	add r5, r5, #1
-	b ploop
+	b printloop
 
 exit:
-	mov r0, r6 @ r0 = r6 return code = n
-	ldr r1, =return @ r1 <- &return
-	ldr lr, [r1] @ lr <- *r1 saved return address
+	mov r0, r6 @ r0 = r6 result code = n
+	ldr r1, =result @ r1 <- &result
+	ldr lr, [r1] @ lr <- *r1 saved result address
 	bx lr
 
 .data
 number: .word 0 @ place to hold input number
 array: .space 100 @ room for 25 integers = 100 bytes
-return: .word 0 @ place for return address of main
+result: .word 0 @ place for result address of main
 prompt: .asciz "Input a positive integer (negative to quit): "
-result: .asciz "Sorted, those integers are: \n"
-scanFMT: .asciz "%d"
-printFMT: .asciz " %d\n"
+outputMSG: .asciz "Sorted, those integers are: \n"
+FormatScan: .asciz "%d"
+FormatPrint: .asciz " %d\n"
 
 /* External */
 .global printf

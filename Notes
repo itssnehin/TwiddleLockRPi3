@@ -1,0 +1,80 @@
+Introduction:
+
+	-Names
+		- Jarrod, Snehin
+
+	- Layout:
+	
+		- Two push buttons (Secure mode and Unsecure mode)
+			- Easily switch between modes
+			- One click only to initiate
+
+		- A potentiometer to act as the physical lock
+	
+		- The MCP3008 ADC with SPI communication
+			- Resolution of 0.5s for each timing value
+	
+		- Raspberry Pi 3B
+
+		- Two LED lines to indicate lock and unlock
+			- Raised high for 2s
+
+		- Speaker output for sound
+
+		- Separate assembly code
+
+UML Use Case:
+
+
+State Chart:
+	
+	- Initial setup
+
+		- Set up GPIO ports and variables
+		- Initially locked
+	
+	- Use a push button to enter mode
+
+	- Enter a code
+
+		- Stay in state until no change for 5s
+		- Or if there are turns
+		- or a change in direction
+
+	- List.sort() for unsecure mode
+
+	- Check secure code checks the input directions and timings
+
+	- Check unsecure only checks the sorted timings
+
+	- (Un)Lock state will raise LED high for 2s and play sounds
+
+Run code:
+
+	- show it is running successfully
+	- change to secure mode
+		- show how a combination is entered and stored (show code)
+		- Show wrong output
+		- Show correct output
+		- Show if timing is wrong but direction is right
+	
+	- Change to unsecure mode
+
+		- Show it works
+
+	- Show assembly code
+
+		- explain insertion sort
+
+Conclusions:
+	
+	- Secure mode is safer and unsecure mode doesn't have any speed improvements
+	- Same time to unlock for both methods
+
+	- The lock succesfully works as intended (albiet for the resolution of 500 ms)
+
+	- We should hash the stored values so that no unauthorized person can read the memory of the Pi
+
+	- Should implement a GUI to make it user friendly
+
+	- 
