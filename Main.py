@@ -3,27 +3,24 @@ import time
 import os
 import Adafruit_MCP3008
 
-# Check for secure mode or unsecure mode
-# secure mode: button pressed
-# unsecure mode: button + knob 
-Sbtn = False
-Ubtn = False
-def ServicePress(channel):
 
-	print("Secure mode!")
-	global Sbtn, code, Time 
+def secureMode(channel):
+	global Sbtn, code, Time, interval, counter, Ubtn
 	Sbtn = True
 	Ubtn = False
 	code = []
 	Time = []
+	interval = 0
+	counter = 0
 
-def unsecure(channel):
-	print("Unsecure mode!")
-	global Ubtn, code, Time 
+def unsecureMode(channel):
+	global Ubtn, code, Time, interval, counter, Sbtn
 	Ubtn = True
 	Sbtn = False
 	code = []
 	Time = []
+	interval = 0
+	counter = 0
 
 
 # Determines if the knob is turned left(0) or right (1)
@@ -48,9 +45,19 @@ def Buzz(answer):
 		os.system("omxplayer correctAns.mp3")
 	else:
 		os.system("omxplayer wrongAns.mp3")
-	#os.system("q")
-
-
+	#os.system("q")                                                                                         #Delete This
+		
+def ModeDisplay():
+        if (Sbtn == True):
+                f = open('SBtn.txt','r')
+                DisplayMode = f.read()
+                print(DisplayMode)
+                f.close()
+        elif (Ubtn == True):
+                f = open('UBtn.txt','r')
+                DisplayMode = f.read()
+                print(DisplayMode)
+                f.close()                
 
 ################################  Main  ######################################
 
@@ -58,40 +65,46 @@ def Buzz(answer):
 # Assume lock is locked by default
 # keep log of durations in ms
 def main():
-
-	counter = 0
-
+        #Wait for mode button press
+        #Loops until keyboard interrupt
 	while (1):
-    	
-		global ch0, Sbtn, code, inputCode, interval, Ubtn, Time, ans, unlockPin, lockPin
-		ch0.insert(16, mcp.read_adc(0))
-		ch0.pop(0)
+                global Sbtn, code, inputCode, interval, Ubtn, Time, ans, unlockPin, lockPin, interval, counter
+		#global ch0, Sbtn, code, inputCode, interval, Ubtn, Time, ans, unlockPin, lockPin, interval, counter, mode
+
+		#Indicate that the device is locked
+		#print("LOCKED!")
+		#os.system('clear')
+		
+		#Create a queue of 16 elements (first in - first out)                                           #Delete this
+		#ch0.insert(16, mcp.read_adc(0))
+		#ch0.pop(0)
 
 		#if button pressed then measure turn
-		
-		fin = [0] * 16
+		#fin = [0] * 16
+
+		#Determine which direction the Dial has moved, -1 indicates error
 		check = -1
+		#The previous turn direction of Dial (0,1,2)
 		lastValue = -2
 
 
-		# If btn pressed check for turns
+		#If Secure/Unsecure button pressed check for turns
 		if ((Sbtn == True) or (Ubtn == True)):
-
 			print("Start!")
 			init = mcp.read_adc(0)
-			ch0.insert(16, init)
-			ch0.pop(0)
-			 #make sure not off (0V) initially for now
+			
+			#ch0.insert(16, init)                                                                   #Delete this
+			#ch0.pop(0)
+			#make sure not off (0V) initially for now
 
-			time.sleep(0.5)
-			interval = 0
+			#loops until there is no turn of dial for 5[s] (500[ms] discrete time iteration)
 			while (1):
 				
 				time.sleep(0.5)
 				fin = mcp.read_adc(0)
 				
-				ch0.insert(16, fin)
-				ch0.pop(0)
+				#ch0.insert(16, fin)                                                             #Delete this
+				#ch0.pop(0)
 
 
 				os.system("clear")
@@ -119,17 +132,19 @@ def main():
 					code.pop()
 
 				inputCode = True
+				#Display Metadata during mode operation
 				print("Check " + str(check))
 				print("Time passed: " + str(counter) + "s")
-
+				ModeDisplay()
+				
 				if (check == 2) and (interval > 4.5):
 					break
 				
 
 			#compare code
 			if (inputCode == True):
-				
-				del(Time[0])
+				if ((len(Time)>0) and (Time[0] < 0.5)):                                                                       
+                                        del(Time[0])
 
 				#Sort the input
 				if (Ubtn):
@@ -160,19 +175,20 @@ def main():
 
 				else:
 					ans = False
-					print("Wrong code!")
+					print("Wrong Combination!")
 					
 
 					GPIO.output(lockPin, GPIO.HIGH)
 					time.sleep(2)
 					GPIO.output(lockPin, GPIO.LOW)
 
-				# Play a sound
+				#Play a sound
 				Buzz(ans)
+				#Reset ans
 				ans = False
 
 
-
+                        
 			Sbtn = False
 			Ubtn = False
 			print("Done comparing!")
@@ -185,41 +201,53 @@ def main():
 
 ########################### Initial Setup #################################
 
-#Globals
-#GPIO.cleanup()
+#Global init
+
+#Dynamic Arrays of the combination inserted by the user
 Time = []
+code = []
 
-ch0 = [0]*16 # Channel for the knob
-lock = [0,1,0,1]
-lockTime = [2,2,2,2]
+#Hard Coded Combination
+lock = []
+lockTime = []
+
+#Secure button
+Sbtn = False
+#Unsecure button
+Ubtn = False
+
+#Elapsed time
+counter = 0
+interval = 0
+
+#mode = "Select Mode"                                                                                                   #Delete This
 ans = False
-code = []  # Code input by user
-GPIO.setmode(GPIO.BCM)
-interval = 0 # Time passed
-# Buttons definition
-service = 2 # Can change later on
-GPIO.setup(service, GPIO.IN, pull_up_down = GPIO.PUD_UP)
-GPIO.add_event_detect(service, GPIO.FALLING, callback = ServicePress, bouncetime = 500)
-
-Upin = 26
-GPIO.setup(Upin, GPIO.IN, pull_up_down = GPIO.PUD_UP)
-GPIO.add_event_detect(Upin, GPIO.FALLING, callback = unsecure, bouncetime = 500)
-
-
-   #Lock and unlock ports to be done (Lock on by default)
-lockPin = 3
 inputCode  =  False
+#Redundant array                                                                                                        #Delete this
+#ch0 = [0]*16 # Channel for the knob
 
-unlockPin = 19
+#Raspberry setup
+GPIO.setmode(GPIO.BCM)
+
+# Buttons definition
+securePin = 2
+GPIO.setup(securePin, GPIO.IN, pull_up_down = GPIO.PUD_UP)
+GPIO.add_event_detect(securePin, GPIO.FALLING, callback = secureMode, bouncetime = 500)
+
+unsecurePin = 26
+GPIO.setup(unsecurePin, GPIO.IN, pull_up_down = GPIO.PUD_UP)
+GPIO.add_event_detect(unsecurePin, GPIO.FALLING, callback = unsecureMode, bouncetime = 500)
 
 
-GPIO.setup(unlockPin, GPIO.OUT)
-GPIO.output(unlockPin, GPIO.LOW)
-
-
+#Lock and unlock ports to be done (Lock on by default)
+#Red LED
+lockPin = 3
 GPIO.setup(lockPin, GPIO.OUT)
 GPIO.output(lockPin, GPIO.LOW)
-print("LOCKED!")
+#Blue Led
+unlockPin = 19
+GPIO.setup(unlockPin, GPIO.OUT)
+GPIO.output(unlockPin, GPIO.LOW)
 
 
 GPIO.output(lockPin, GPIO.HIGH)
