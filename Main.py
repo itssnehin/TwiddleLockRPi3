@@ -45,7 +45,6 @@ def Buzz(answer):
 		os.system("omxplayer correctAns.mp3")
 	else:
 		os.system("omxplayer wrongAns.mp3")
-	#os.system("q")                                                                                         #Delete This
 		
 def ModeDisplay():
         if (Sbtn == True):
