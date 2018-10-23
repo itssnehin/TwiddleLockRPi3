@@ -3,7 +3,6 @@ import time
 import os
 import Adafruit_MCP3008
 
-
 def secureMode(channel):
 	global Sbtn, code, Time, interval, counter, Ubtn
 	Sbtn = True
@@ -22,7 +21,6 @@ def unsecureMode(channel):
 	interval = 0
 	counter = 0
 
-
 # Determines if the knob is turned left(0) or right (1)
 # take in two lists and compare
 def checkTurn(initial, final):
@@ -38,7 +36,6 @@ def checkTurn(initial, final):
 	else:
 		print("No turn")
 		return 2 # no change in position
-
 
 def Buzz(answer):
 	if (answer):
