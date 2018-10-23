@@ -36,7 +36,7 @@ inputloop:
 	b inputloop
 
 
-isort:
+isort:   @ Implement a double loop (forand while)
 	mov r0, r4 @ r0 <- &array (a)
 	mov r1, r6 @ r1 <- count = length (n)
 
