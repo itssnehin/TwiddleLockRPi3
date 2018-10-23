@@ -39,8 +39,10 @@ def checkTurn(initial, final):
 
 def Buzz(answer):
 	if (answer):
+		#A system command which opens a preinstalled music application and play the respective audio track
 		os.system("omxplayer correctAns.mp3")
 	else:
+		#A system command which opens a preinstalled music application and play the respective audio track
 		os.system("omxplayer wrongAns.mp3")
 		
 def ModeDisplay():
@@ -96,7 +98,7 @@ def main():
 				counter += 0.5
 				interval += 0.5
 				
-				# Compare last turn to current turn
+				# Compare last turn value to current turn value
 				if ((lastValue != check) and (lastValue != 2)):
 					counter = 0
 					Time.append(interval - 0.5)
