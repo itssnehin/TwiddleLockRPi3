@@ -69,19 +69,7 @@ def main():
         #Loops until keyboard interrupt
 	while (1):
                 global Sbtn, code, inputCode, interval, Ubtn, Time, ans, unlockPin, lockPin, interval, counter
-		#global ch0, Sbtn, code, inputCode, interval, Ubtn, Time, ans, unlockPin, lockPin, interval, counter, mode
-
-		#Indicate that the device is locked
-		#print("LOCKED!")
-		#os.system('clear')
 		
-		#Create a queue of 16 elements (first in - first out)                                           #Delete this
-		#ch0.insert(16, mcp.read_adc(0))
-		#ch0.pop(0)
-
-		#if button pressed then measure turn
-		#fin = [0] * 16
-
 		#Determine which direction the Dial has moved, -1 indicates error
 		check = -1
 		#The previous turn direction of Dial (0,1,2)
@@ -91,28 +79,27 @@ def main():
 		#If Secure/Unsecure button pressed check for turns
 		if ((Sbtn == True) or (Ubtn == True)):
 			print("Start!")
+			#ADC value before turning (part 1 of 2)
 			init = mcp.read_adc(0)
 			
-			#ch0.insert(16, init)                                                                   #Delete this
-			#ch0.pop(0)
-			#make sure not off (0V) initially for now
-
 			#loops until there is no turn of dial for 5[s] (500[ms] discrete time iteration)
 			while (1):
 				
 				time.sleep(0.5)
+				
+				#Current ADC value (part 2 of 2)
 				fin = mcp.read_adc(0)
 				
-				#ch0.insert(16, fin)                                                             #Delete this
-				#ch0.pop(0)
-
-
+				#Clears screen
 				os.system("clear")
+				
+				# either 0,1,2
 				lastValue = check
 
 				check = checkTurn(init, fin)
 				counter += 0.5
 				interval += 0.5
+				
 				# Compare last turn to current turn
 				if ((lastValue != check) and (lastValue != 2)):
 					counter = 0
@@ -123,8 +110,8 @@ def main():
 					interval = 0
 					counter = 0
 
-
 				init = fin
+				
 				if (check != 2):
 					code.append(check)  #0 = left, 1 = right, 2 = no turn
 				
@@ -132,25 +119,24 @@ def main():
 					code.pop()
 
 				inputCode = True
-				#Display Metadata during mode operation
+				
+				#Display data to screen during mode operation
 				print("Check " + str(check))
 				print("Time passed: " + str(counter) + "s")
 				ModeDisplay()
 				
 				if (check == 2) and (interval > 4.5):
 					break
-				
-
-			#compare code
+			#compare code[] with lock[] and Time[] with lockTime[]
 			if (inputCode == True):
 				if ((len(Time)>0) and (Time[0] < 0.5)):                                                                       
                                         del(Time[0])
 
-				#Sort the input
+				#Sort the input if in unsecure mode
 				if (Ubtn):
 					Time.sort()
 					lockTime.sort()
-
+					
 				if ((code == lock) and (lockTime == Time) and Sbtn):
 					GPIO.output(lockPin, GPIO.LOW)
 					print("Code and Timing correct!")
@@ -176,7 +162,6 @@ def main():
 				else:
 					ans = False
 					print("Wrong Combination!")
-					
 
 					GPIO.output(lockPin, GPIO.HIGH)
 					time.sleep(2)
@@ -220,11 +205,8 @@ Ubtn = False
 counter = 0
 interval = 0
 
-#mode = "Select Mode"                                                                                                   #Delete This
 ans = False
 inputCode  =  False
-#Redundant array                                                                                                        #Delete this
-#ch0 = [0]*16 # Channel for the knob
 
 #Raspberry setup
 GPIO.setmode(GPIO.BCM)
