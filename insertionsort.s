@@ -12,7 +12,7 @@ main:
 	@ Initialize
 	ldr r7, =result				@ save
 	str lr, [r7]				@ link register for result
-	mov r6, #0					@ counter in r6
+	mov r6, #0				@ counter in r6
 	ldr r4, =array				@ constant array in r4
 
 inputloop:
@@ -46,7 +46,7 @@ iloop:@ for-loop
 	
 	cmp r2, r1 @ i - n
 	bge iloopend @ i >= n then go to loopend
-	add r10, r0, r2, LSL #2 @ temp = &array[4*j]
+	add r10, r0, r2, LSL #2 @ temp = &array[4*j]  (left shift of 2)
 	ldr r10, [r10] @ temp = array [4*i]
 	sub r3, r2, #1 @ j = 1 - 1
 
