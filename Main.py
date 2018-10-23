@@ -191,8 +191,8 @@ Time = []
 code = []
 
 #Hard Coded Combination
-lock = [0,1,0,1]  	#0: left turn, 1: right turn
-lockTime = [2,1,3,1]	#each element is in seconds
+lock = [0,1,0]  	#0: left turn, 1: right turn
+lockTime = [2,1,3]	#each element is in seconds
 
 #Secure button
 Sbtn = False
